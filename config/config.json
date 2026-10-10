@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "rosterBackend",
+    "password": "root",
+    "database": "roster",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "rosterBackend",
+    "password": "root",
+    "database": "roster",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "rosterBackend",
+    "password": "root",
+    "database": "roster",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
