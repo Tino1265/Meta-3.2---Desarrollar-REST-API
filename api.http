@@ -1,0 +1,432 @@
+### ============================================================
+### API de Rosters y Jugadores - Pruebas para REST Client (VS Code)
+### Extensión: "REST Client" (humao.rest-client)
+### Haz clic en "Send Request" sobre cada petición.
+### ============================================================
+
+@baseUrl = http://localhost:3000
+@json = application/json
+
+# Ids usados en las pruebas. Ajústalos según lo que tengas en tu base de datos.
+@rosterId = 1
+@jugadorId = 1
+
+
+### ============================================================
+### HEALTH
+### ============================================================
+
+### Verificar que la API está activa
+GET {{baseUrl}}/health
+
+
+### ============================================================
+### JUGADORES
+### ============================================================
+
+### Listar todos los jugadores
+GET {{baseUrl}}/jugadores
+
+### Filtrar por rol
+GET {{baseUrl}}/jugadores?rol=Mid
+
+### Filtrar por estado
+GET {{baseUrl}}/jugadores?estado=activo
+
+### Filtrar por rol y estado
+GET {{baseUrl}}/jugadores?rol=Top&estado=activo
+
+### Buscar por texto
+GET {{baseUrl}}/jugadores?search=fak
+
+### Obtener un jugador por id
+GET {{baseUrl}}/jugadores/{{jugadorId}}
+
+### Crear jugador (Top)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "TopPlayer",
+  "nombre_real": "Juan Pérez",
+  "pais": "México",
+  "rol": "Top",
+  "estado": "activo"
+}
+
+### Crear jugador (Jungle)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "JunglePlayer",
+  "nombre_real": "Carlos López",
+  "pais": "México",
+  "rol": "Jungle",
+  "estado": "activo"
+}
+
+### Crear jugador (Mid)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "MidPlayer",
+  "nombre_real": "Luis Gómez",
+  "pais": "Chile",
+  "rol": "Mid",
+  "estado": "activo"
+}
+
+### Crear jugador (ADC)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "AdcPlayer",
+  "pais": "Argentina",
+  "rol": "ADC",
+  "estado": "activo"
+}
+
+### Crear jugador (Support)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "SupportPlayer",
+  "rol": "Support",
+  "estado": "activo"
+}
+
+### Crear segundo jugador Mid (sirve para probar la regla de rol repetido)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "MidPlayer2",
+  "rol": "Mid",
+  "estado": "activo"
+}
+
+### Actualizar jugador
+PUT {{baseUrl}}/jugadores/{{jugadorId}}
+Content-Type: {{json}}
+
+{
+  "nickname": "TopPlayerEditado",
+  "nombre_real": "Juan Pérez García",
+  "pais": "México",
+  "rol": "Top",
+  "estado": "inactivo"
+}
+
+### Eliminar jugador
+DELETE {{baseUrl}}/jugadores/{{jugadorId}}
+
+
+### ------------------------------------------------------------
+### JUGADORES - Casos de error (deben responder 400 / 404)
+### ------------------------------------------------------------
+
+### Id inválido (debe responder 400)
+GET {{baseUrl}}/jugadores/abc
+
+### Jugador inexistente (debe responder 404)
+GET {{baseUrl}}/jugadores/9999
+
+### Rol inválido en el filtro (debe responder 400)
+GET {{baseUrl}}/jugadores?rol=Tank
+
+### Crear sin nickname (debe responder 400)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "rol": "Top",
+  "estado": "activo"
+}
+
+### Crear con rol inválido (debe responder 400)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "RolMalo",
+  "rol": "Tank",
+  "estado": "activo"
+}
+
+### Crear con estado inválido (debe responder 400)
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "EstadoMalo",
+  "rol": "Top",
+  "estado": "pausado"
+}
+
+### Crear con nickname repetido (debe fallar si ya existe "TopPlayer")
+POST {{baseUrl}}/jugadores
+Content-Type: {{json}}
+
+{
+  "nickname": "TopPlayer",
+  "rol": "Top",
+  "estado": "activo"
+}
+
+
+### ============================================================
+### ROSTERS
+### ============================================================
+
+### Listar todos los rosters
+GET {{baseUrl}}/rosters
+
+### Filtrar por tipo
+GET {{baseUrl}}/rosters?tipo=Principal
+
+### Filtrar por temporada
+GET {{baseUrl}}/rosters?temporada=2026
+
+### Filtrar por tipo y temporada
+GET {{baseUrl}}/rosters?tipo=Academy&temporada=2026
+
+### Obtener un roster con sus jugadores
+GET {{baseUrl}}/rosters/{{rosterId}}
+
+### Crear roster Principal
+POST {{baseUrl}}/rosters
+Content-Type: {{json}}
+
+{
+  "nombre": "Team Alpha",
+  "juego": "League of legends",
+  "tipo": "Principal",
+  "temporada": "2026"
+}
+
+### Crear roster Academy
+POST {{baseUrl}}/rosters
+Content-Type: {{json}}
+
+{
+  "nombre": "Team Alpha Academy",
+  "juego": "League of legends",
+  "tipo": "Academy",
+  "temporada": "2026"
+}
+
+### Actualizar roster
+PUT {{baseUrl}}/rosters/{{rosterId}}
+Content-Type: {{json}}
+
+{
+  "nombre": "Team Alpha Editado",
+  "juego": "League of legends",
+  "tipo": "Principal",
+  "temporada": "2027"
+}
+
+### Eliminar roster
+DELETE {{baseUrl}}/rosters/{{rosterId}}
+
+
+### ------------------------------------------------------------
+### ROSTERS - Casos de error (deben responder 400 / 404)
+### ------------------------------------------------------------
+
+### Id inválido (debe responder 400)
+GET {{baseUrl}}/rosters/abc
+
+### Roster inexistente (debe responder 404)
+GET {{baseUrl}}/rosters/9999
+
+### Tipo inválido en el filtro (debe responder 400)
+GET {{baseUrl}}/rosters?tipo=Otro
+
+### Crear sin nombre (debe responder 400)
+POST {{baseUrl}}/rosters
+Content-Type: {{json}}
+
+{
+  "juego": "League of legends",
+  "tipo": "Principal",
+  "temporada": "2026"
+}
+
+### Crear con tipo inválido (debe responder 400)
+POST {{baseUrl}}/rosters
+Content-Type: {{json}}
+
+{
+  "nombre": "Team Beta",
+  "juego": "League of legends",
+  "tipo": "Otro",
+  "temporada": "2026"
+}
+
+### Actualizar roster inexistente (debe responder 404)
+PUT {{baseUrl}}/rosters/9999
+Content-Type: {{json}}
+
+{
+  "nombre": "No existe",
+  "juego": "League of legends",
+  "tipo": "Principal",
+  "temporada": "2026"
+}
+
+
+### ============================================================
+### JUGADORES DE UN ROSTER
+### ============================================================
+
+### Listar jugadores de un roster
+GET {{baseUrl}}/rosters/{{rosterId}}/jugadores
+
+### Asignar jugador como Titular
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{
+  "id_jugador": 1,
+  "rol_en_roster": "Titular"
+}
+
+### Asignar jugador como Suplente
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{
+  "id_jugador": 6,
+  "rol_en_roster": "Suplente"
+}
+
+### Cambiar rol en el roster a Suplente
+PUT {{baseUrl}}/rosters/{{rosterId}}/jugadores/{{jugadorId}}
+Content-Type: {{json}}
+
+{
+  "rol_en_roster": "Suplente"
+}
+
+### Cambiar rol en el roster a Titular
+PUT {{baseUrl}}/rosters/{{rosterId}}/jugadores/{{jugadorId}}
+Content-Type: {{json}}
+
+{
+  "rol_en_roster": "Titular"
+}
+
+### Quitar jugador del roster
+DELETE {{baseUrl}}/rosters/{{rosterId}}/jugadores/{{jugadorId}}
+
+
+### ------------------------------------------------------------
+### REGLAS DE NEGOCIO Y ERRORES DE LA RELACIÓN
+### Prepara el escenario: roster {{rosterId}} y jugadores del 1 al 6
+### creados en este orden: Top, Jungle, Mid, ADC, Support, Mid.
+### Asigna como Titulares los jugadores 1 al 5 con las peticiones
+### de abajo antes de probar los errores.
+### ------------------------------------------------------------
+
+### Titular 1 (Top)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 1, "rol_en_roster": "Titular" }
+
+### Titular 2 (Jungle)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 2, "rol_en_roster": "Titular" }
+
+### Titular 3 (Mid)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 3, "rol_en_roster": "Titular" }
+
+### Titular 4 (ADC)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 4, "rol_en_roster": "Titular" }
+
+### Titular 5 (Support)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 5, "rol_en_roster": "Titular" }
+
+### Sexto titular (debe responder 400: máximo 5 titulares)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 6, "rol_en_roster": "Titular" }
+
+### Jugador repetido en el mismo roster (debe responder 409)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 1, "rol_en_roster": "Suplente" }
+
+### Jugador inexistente (debe responder 404)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 9999, "rol_en_roster": "Suplente" }
+
+### Roster inexistente (debe responder 404)
+POST {{baseUrl}}/rosters/9999/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 1, "rol_en_roster": "Suplente" }
+
+### rol_en_roster inválido (debe responder 400)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 6, "rol_en_roster": "Capitan" }
+
+### Sin id_jugador (debe responder 400)
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "rol_en_roster": "Titular" }
+
+### Rol de juego repetido entre titulares:
+### primero asigna el jugador 6 (Mid) como Suplente...
+POST {{baseUrl}}/rosters/{{rosterId}}/jugadores
+Content-Type: {{json}}
+
+{ "id_jugador": 6, "rol_en_roster": "Suplente" }
+
+### ...y luego intenta pasarlo a Titular (debe responder 400:
+### ya hay un titular Mid y además ya hay 5 titulares)
+PUT {{baseUrl}}/rosters/{{rosterId}}/jugadores/6
+Content-Type: {{json}}
+
+{ "rol_en_roster": "Titular" }
+
+### Cambiar rol de un jugador que no está en el roster (debe responder 404)
+PUT {{baseUrl}}/rosters/{{rosterId}}/jugadores/9999
+Content-Type: {{json}}
+
+{ "rol_en_roster": "Suplente" }
+
+### Titular -> Titular no debe bloquearse a sí mismo (debe responder 200)
+PUT {{baseUrl}}/rosters/{{rosterId}}/jugadores/1
+Content-Type: {{json}}
+
+{ "rol_en_roster": "Titular" }
+
+### Quitar un jugador que no está en el roster (debe responder 404)
+DELETE {{baseUrl}}/rosters/{{rosterId}}/jugadores/9999
+
+### Ids inválidos (debe responder 400)
+DELETE {{baseUrl}}/rosters/abc/jugadores/xyz
