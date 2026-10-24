@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: 'id_jugador',
         as: 'jugadores'
       });
+      Roster.belongsTo(models.Usuario, {
+        foreignKey: 'id_usuario',
+        as: 'usuario'
+      });
     }
   }
   Roster.init({

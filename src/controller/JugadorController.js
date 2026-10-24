@@ -70,21 +70,25 @@ export class JugadorController {
         }
     }
     static actualizarJugador = async(req,res)=>{
-        const { id } = req.params;
-        const { nickname, nombre_real, pais, rol, estado } = req.body;
-        const jugador = await db.Jugador.findByPk(id);
-        if(!jugador) {
-            return res.status(404).json({mensaje: `No se encontro ningun jugador con el id ${id}`})
-        }
-        await jugador.update({
-            nickname: nickname ?? jugador.nickname,
-            nombre_real: nombre_real ?? jugador.nombre_real,
-            pais: pais ?? jugador.pais,
-            rol: rol ?? jugador.rol,
-            estado: estado ?? jugador.estado
-        });
+        try{
+            const { id } = req.params;
+            const { nickname, nombre_real, pais, rol, estado } = req.body;
+            const jugador = await db.Jugador.findByPk(id);
+            if(!jugador) {
+                return res.status(404).json({mensaje: `No se encontro ningun jugador con el id ${id}`})
+            }
+            await jugador.update({
+                nickname: nickname ?? jugador.nickname,
+                nombre_real: nombre_real ?? jugador.nombre_real,
+                pais: pais ?? jugador.pais,
+                rol: rol ?? jugador.rol,
+                estado: estado ?? jugador.estado
+            });
 
-        return res.status(200).json(jugador);
+            return res.status(200).json(jugador);
+        }catch(e){
+            return res.status(500).json({error:e.message})
+        }
     }
     static eliminarJugador= async(req,res)=>{
         try{

@@ -3,6 +3,7 @@ import { validationError } from "../middleware/error.js";
 import { JugadorController } from "../controller/JugadorController.js";
 import { body, param, query } from "express-validator";
 import db from "../../models/index.js";
+import { verificarToken } from "../middleware/verificarToken.js";
 /**
  * @openapi
  * components:
@@ -67,6 +68,7 @@ const jugadores = Router()
  *         description: Error interno del servidor
  */
 jugadores.get("/",
+    verificarToken,
     query("rol").optional().isIn(['Top', 'Jungle', 'Mid', 'ADC', 'Support']).withMessage("El rol del filtro debe ser: Top,Jungle,ADC y Support"),
     query('estado').optional()
     .isIn(['activo', 'inactivo'])
@@ -105,6 +107,7 @@ jugadores.get("/",
  *         description: Error interno del servidor
  */
 jugadores.get("/:id",
+    verificarToken,
     param('id').isInt({min:1}).withMessage("El id debe ser numerico"),
     validationError,
     JugadorController.listarJugadoresById
@@ -135,6 +138,7 @@ jugadores.get("/:id",
  *         description: Error interno del servidor
  */
 jugadores.post("/",
+    verificarToken,
     body("nickname").notEmpty().withMessage("El nickname no debe estar vacio").isString().withMessage("El nickname debe ser un strint"),
     body("nombre_real").optional().isString().withMessage("Debe ser un string"),
     body("pais").optional().isString().withMessage("Debe ser un string"),
@@ -183,6 +187,7 @@ jugadores.post("/",
  *         description: Error interno del servidor
  */
 jugadores.put("/:id",
+    verificarToken,
     param("id").isInt({min:1}).withMessage("el id debe ser un entero"),
     body("nickname").optional().trim().notEmpty().withMessage("El nickname no debe estar vacio")
     .isString().withMessage("El nickname debe ser un string").custom(async (value, { req }) => {
@@ -222,6 +227,7 @@ jugadores.put("/:id",
  *         description: Error interno del servidor
  */
 jugadores.delete("/:id",
+    verificarToken,
     param("id").isInt({min:1}).withMessage("El id debe ser un entero"),
     validationError,
     JugadorController.eliminarJugador

@@ -1,4 +1,3 @@
-import { where } from "sequelize"
 import db from "../../models/index.js"
 export class RostersController {
     static obtenerTodosLosRosters = async(req,res)=>{
@@ -46,7 +45,8 @@ export class RostersController {
                 nombre,
                 juego,
                 tipo,
-                temporada
+                temporada,
+                id_usuario: req.usuario.id
             })
             return res.status(200).json(nuevoRoster)
         } catch (error) {
@@ -80,7 +80,7 @@ export class RostersController {
             if(!rosterAEliminar){
                 return res.status(404).json({message:"no se encontro el roster"})
             }
-            rosterAEliminar.destroy();
+            await rosterAEliminar.destroy();
             return res.status(200).json("Eliminado Correctamente")
         } catch (error) {
             return res.status(500).json({errors:error.message})
@@ -170,10 +170,10 @@ export class RostersController {
             if(!jugadorRoster){
                 return res.status(404).json({message:"El roster o el jugador no tienen una relacion o no existen"})
             }
-            jugadorRoster.destroy();
-            return res.status(204).json("Eliminado Correctamente")
+            await jugadorRoster.destroy();
+            return res.status(200).json("Eliminado Correctamente")
         } catch (error) {
-            return res.status(500).json({errors:error})
+            return res.status(500).json({errors:error.message})
         }
     }
 }

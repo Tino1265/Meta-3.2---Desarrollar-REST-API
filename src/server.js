@@ -1,9 +1,12 @@
 import express from "express"
 import dotenv from "dotenv"
+import cookieParser from "cookie-parser"
 import swaggerJsdoc from "swagger-jsdoc"
 import swaggerUi from "swagger-ui-express"
 import jugadores from "./routers/JugadoresRoutes.js";
 import rosters from "./routers/RostersRoutes.js";
+import auth from './routers/AuthRoutes.js'
+import cors from "cors"
 dotenv.config()
 const server = express();
 
@@ -16,7 +19,13 @@ const spec = swaggerJsdoc({
 })
 
 server.use("/docs", swaggerUi.serve, swaggerUi.setup(spec))
+server.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}))
 server.use(express.json())
+server.use(cookieParser())
+server.use("/auth", auth)
 server.use("/jugadores",jugadores)
 server.use("/rosters",rosters)
 server.get("/roles",(req,res)=>{
