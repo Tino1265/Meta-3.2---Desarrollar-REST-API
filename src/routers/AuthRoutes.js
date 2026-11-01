@@ -12,6 +12,8 @@ auth.post("/register",
     validationError,
     AuthController.register
 )
+auth.get("/google/login", AuthController.googleLogin)
+auth.get("/google/callback", AuthController.googleCallback)
 auth.get("/me", verificarToken, AuthController.me)
 auth.post("/login",
     body("email").trim().isEmail().withMessage("Debe ser un email válido").normalizeEmail(),

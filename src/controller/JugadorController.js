@@ -1,17 +1,13 @@
 import { Op, where } from "sequelize";
 import db from "../../models/index.js"
 export class JugadorController {
-    static listarJugadores = async (req,res)=>{
-        try{
-            const {rol,estado,search} =  req.query;
+    static listarJugadores = async (req, res) => {
+        try {
+            const { rol, estado, search } = req.query;
             const whereConditions = {};
-            if (rol) {
-                whereConditions.rol = rol;
-            }
 
-            if (estado) {
-                whereConditions.estado = estado;
-            }
+            if (rol) whereConditions.rol = rol;
+            if (estado) whereConditions.estado = estado;
 
             if (search) {
                 whereConditions.nickname = {
@@ -19,17 +15,48 @@ export class JugadorController {
                 };
             }
 
-            const jugadores = await db.Jugador.findAll({
-                where: whereConditions
-            })
-            if(jugadores.length == 0){
-                return res.status(400).json("No hay Jugadores")
+            // Rosters pertenecientes al usuario autenticado
+            const rosters = await db.Roster.findAll({
+                where: { id_usuario: req.usuario.id },
+                attributes: ["id"],
+                raw: true
+            });
+
+            const rosterIds = rosters.map(roster => roster.id);
+
+            if (rosterIds.length === 0) {
+                return res.status(200).json([]);
             }
+
+            // Jugadores relacionados con esos rosters
+            const relaciones = await db.Roster_Jugador.findAll({
+                where: {
+                    id_roster: { [Op.in]: rosterIds }
+                },
+                attributes: ["id_jugador"],
+                raw: true
+            });
+
+            const jugadorIds = [
+                ...new Set(relaciones.map(relacion => relacion.id_jugador))
+            ];
+
+            if (jugadorIds.length === 0) {
+                return res.status(200).json([]);
+            }
+
+            const jugadores = await db.Jugador.findAll({
+                where: {
+                    ...whereConditions,
+                    id: { [Op.in]: jugadorIds }
+                }
+            });
+
             return res.status(200).json(jugadores);
-        }catch(error){
-            return res.status(500).json({error: error.message})
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
         }
-    }
+    };
     static listarJugadoresById = async (req,res)=>{
         try{
             const {id} = req.params;

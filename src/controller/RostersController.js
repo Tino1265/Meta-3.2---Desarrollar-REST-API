@@ -3,7 +3,9 @@ export class RostersController {
     static obtenerTodosLosRosters = async(req,res)=>{
         try {
             const {tipo,temporada} = req.query
-            const whereConditions = {}
+            const whereConditions = {
+                id_usuario: req.usuario.id
+            };
             if(tipo) {
                 whereConditions.tipo = tipo
             }
