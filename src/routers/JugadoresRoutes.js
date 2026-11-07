@@ -4,6 +4,8 @@ import { JugadorController } from "../controller/JugadorController.js";
 import { body, param, query } from "express-validator";
 import db from "../../models/index.js";
 import { verificarToken } from "../middleware/verificarToken.js";
+import {soloAdmin} from "../middleware/soloAdmin.js"
+import { PublicoController } from "../controller/PublicoController.js";
 /**
  * @openapi
  * components:
@@ -34,6 +36,7 @@ import { verificarToken } from "../middleware/verificarToken.js";
  *         message: { type: string }
  */
 const jugadores = Router()
+jugadores.get("/publico", PublicoController.jugadores);
 /**
  * @openapi
  * /jugadores:
@@ -112,7 +115,6 @@ jugadores.get("/:id",
     validationError,
     JugadorController.listarJugadoresById
 )
-
 /**
  * @openapi
  * /jugadores:
@@ -139,6 +141,7 @@ jugadores.get("/:id",
  */
 jugadores.post("/",
     verificarToken,
+    soloAdmin,
     body("nickname").notEmpty().withMessage("El nickname no debe estar vacio").isString().withMessage("El nickname debe ser un strint"),
     body("nombre_real").optional().isString().withMessage("Debe ser un string"),
     body("pais").optional().isString().withMessage("Debe ser un string"),
@@ -188,6 +191,7 @@ jugadores.post("/",
  */
 jugadores.put("/:id",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("el id debe ser un entero"),
     body("nickname").optional().trim().notEmpty().withMessage("El nickname no debe estar vacio")
     .isString().withMessage("El nickname debe ser un string").custom(async (value, { req }) => {
@@ -228,6 +232,7 @@ jugadores.put("/:id",
  */
 jugadores.delete("/:id",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("El id debe ser un entero"),
     validationError,
     JugadorController.eliminarJugador

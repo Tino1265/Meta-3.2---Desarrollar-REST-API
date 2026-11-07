@@ -7,11 +7,9 @@
     "dialect": "mysql"
   },
   "test": {
-    "username": "rosterBackend",
-    "password": "root",
-    "database": "roster",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "use_env_variable": "TEST_DATABASE_URL",
+    "dialect": "mysql",
+    "logging": false
   },
   "production": {
     "username": "rosterBackend",

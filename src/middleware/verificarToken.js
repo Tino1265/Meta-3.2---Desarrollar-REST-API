@@ -10,7 +10,8 @@ export const verificarToken = (req, res, next) => {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
 
         const esLectura = ["GET", "HEAD", "OPTIONS"].includes(req.method);
-        if (!esLectura && req.headers["x-csrf-token"] !== payload.csrfToken) {
+        if (!esLectura && (typeof payload.csrfToken !== "string" ||
+            !payload.csrfToken || req.headers["x-csrf-token"] !== payload.csrfToken)) {
             return res.status(403).json({ message: "Token CSRF inválido" });
         }
 

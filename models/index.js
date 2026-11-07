@@ -7,6 +7,12 @@ const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
+if (env === 'test') {
+  const testUrl = process.env.TEST_DATABASE_URL;
+  if (!testUrl || !new URL(testUrl).pathname.slice(1).endsWith('_e2e')) {
+    throw new Error('TEST_DATABASE_URL debe apuntar a una base exclusiva terminada en _e2e');
+  }
+}
 const db = {};
 
 let sequelize;

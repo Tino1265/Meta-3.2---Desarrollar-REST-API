@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: 'id_roster',
         as: 'rosters'
       });
+      Jugador.belongsTo(models.Usuario, {
+        foreignKey: 'id_usuario',
+        as: 'creador'
+      });
     }
   }
   Jugador.init({
@@ -54,6 +58,10 @@ module.exports = (sequelize, DataTypes) => {
           msg: 'Estado inválido'
         }
       }
+    },
+    id_usuario: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     sequelize,

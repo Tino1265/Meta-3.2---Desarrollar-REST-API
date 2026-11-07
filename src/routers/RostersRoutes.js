@@ -4,6 +4,8 @@ import { RostersController } from "../controller/RostersController.js";
 import { validationError } from "../middleware/error.js";
 import { verificarToken } from "../middleware/verificarToken.js";
 import { duenioORoster } from "../middleware/duenioORoster.js";
+import { soloAdmin } from "../middleware/soloAdmin.js";
+import { PublicoController } from "../controller/PublicoController.js";
 /**
  * @openapi
  * components:
@@ -55,6 +57,8 @@ import { duenioORoster } from "../middleware/duenioORoster.js";
  *         updatedAt: { type: string, format: date-time }
  */
 const rosters = Router();
+rosters.get("/publico", PublicoController.rosters);
+rosters.get("/publico/:id", PublicoController.detalleRoster);
 
 /**
  * @openapi
@@ -151,6 +155,7 @@ rosters.get("/:id",
  */
 rosters.post("/",
     verificarToken,
+    soloAdmin,
     body("nombre").notEmpty().withMessage("El nombre del roster es obligatorio").isString().withMessage("debe ser un string el nombre"),
     body("juego").notEmpty().withMessage("El juego no debe estar vacio").withMessage("debe ser un string el nombre"),
     body("tipo").isIn(["Principal","Academy"]).withMessage("Solo puede ser Principal o Academy"),
@@ -158,6 +163,8 @@ rosters.post("/",
     validationError,
     RostersController.crearRoster
 )
+
+
 
 /**
  * @openapi
@@ -192,6 +199,7 @@ rosters.post("/",
  */
 rosters.put("/:id",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     body("nombre").notEmpty().withMessage("El nombre del roster es obligatorio").isString().withMessage("debe ser un string el nombre"),
     body("juego").notEmpty().withMessage("El juego no debe estar vacio").withMessage("debe ser un string el nombre"),
@@ -226,6 +234,7 @@ rosters.put("/:id",
  */
 rosters.delete("/:id",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     validationError,
     duenioORoster,
@@ -309,6 +318,7 @@ rosters.get("/:id/jugadores",
  */
 rosters.post("/:id/jugadores",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     body("id_jugador").notEmpty().withMessage("no debe estar vacio el id_jugador")
     .isInt({min:1}).withMessage("Debe ser un entero mayor a 0"),
@@ -362,6 +372,7 @@ rosters.post("/:id/jugadores",
  */
 rosters.put("/:id/jugadores/:id_jugador",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     param("id_jugador").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     body("rol_en_roster").notEmpty().withMessage("No debe estar vacio el rol").isIn(["Titular","Suplente"]).withMessage("El rol debe ser Titular o Suplente")
@@ -400,6 +411,7 @@ rosters.put("/:id/jugadores/:id_jugador",
  */
 rosters.delete("/:id/jugadores/:id_jugador",
     verificarToken,
+    soloAdmin,
     param("id").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     param("id_jugador").isInt({min:1}).withMessage("El id debe ser mayor a 0 y ser un entero"),
     validationError,

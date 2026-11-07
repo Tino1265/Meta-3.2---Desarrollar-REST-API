@@ -6,9 +6,8 @@ export const duenioORoster = async (req, res, next) => {
         if (!roster) {
             return res.status(404).json({ message: "El roster no existe" });
         }
-        const esAdmin = req.usuario.perfil === "admin";
         const esDuenio = roster.id_usuario === req.usuario.id;
-        if (!esAdmin && !esDuenio) {
+        if (!esDuenio) {
             return res.status(403).json({ message: "No eres el dueño de este roster" });
         }
         next();

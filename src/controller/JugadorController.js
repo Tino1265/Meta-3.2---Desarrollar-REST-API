@@ -1,10 +1,13 @@
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
 import db from "../../models/index.js"
 export class JugadorController {
     static listarJugadores = async (req, res) => {
         try {
             const { rol, estado, search } = req.query;
             const whereConditions = {};
+
+            whereConditions.id_usuario = req.usuario.id;
+
 
             if (rol) whereConditions.rol = rol;
             if (estado) whereConditions.estado = estado;
@@ -15,41 +18,13 @@ export class JugadorController {
                 };
             }
 
-            // Rosters pertenecientes al usuario autenticado
-            const rosters = await db.Roster.findAll({
-                where: { id_usuario: req.usuario.id },
-                attributes: ["id"],
-                raw: true
-            });
-
-            const rosterIds = rosters.map(roster => roster.id);
-
-            if (rosterIds.length === 0) {
-                return res.status(200).json([]);
-            }
-
-            // Jugadores relacionados con esos rosters
-            const relaciones = await db.Roster_Jugador.findAll({
-                where: {
-                    id_roster: { [Op.in]: rosterIds }
-                },
-                attributes: ["id_jugador"],
-                raw: true
-            });
-
-            const jugadorIds = [
-                ...new Set(relaciones.map(relacion => relacion.id_jugador))
-            ];
-
-            if (jugadorIds.length === 0) {
-                return res.status(200).json([]);
-            }
-
             const jugadores = await db.Jugador.findAll({
-                where: {
-                    ...whereConditions,
-                    id: { [Op.in]: jugadorIds }
-                }
+                where: whereConditions,
+                include: [{
+                    model: db.Usuario,
+                    as: "creador",
+                    attributes: ["id", "nombre"]
+                }]
             });
 
             return res.status(200).json(jugadores);
@@ -57,23 +32,41 @@ export class JugadorController {
             return res.status(500).json({ error: error.message });
         }
     };
-    static listarJugadoresById = async (req,res)=>{
-        try{
-            const {id} = req.params;
-            if(isNaN(id) || undefined){
-                return res.status(400).json({error:"El id debe ser un entero"})
-            }
-            const jugadoresById = await db.Jugador.findByPk(id);
-            if (!jugadoresById) {
-                return res.status(404).json({ 
-                mensaje: `No se encontró ningún jugador con el ID ${id}` 
+
+    static listarJugadoresById = async (req, res) => {
+        try {
+            const id = Number(req.params.id);
+
+            if (!Number.isSafeInteger(id) || id < 1) {
+                return res.status(400).json({
+                    error: "El id debe ser un entero positivo"
                 });
             }
-            res.status(200).json(jugadoresById)
-        }catch(e){
-            return res.status(500).json({error:e.message})
+
+            const whereConditions = { id };
+            whereConditions.id_usuario = req.usuario.id;
+
+
+            const jugador = await db.Jugador.findOne({
+                where: whereConditions,
+                include: [{
+                    model: db.Usuario,
+                    as: "creador",
+                    attributes: ["id", "nombre"]
+                }]
+            });
+
+            if (!jugador) {
+                return res.status(404).json({
+                    mensaje: "Jugador no encontrado"
+                });
+            }
+
+            return res.status(200).json(jugador);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
         }
-    }
+    };
     static crearJugador = async(req,res) => {
         try {
             const {nickname,nombre_real,pais,rol,estado} = req.body;
@@ -88,8 +81,9 @@ export class JugadorController {
                 nombre_real,
                 pais,
                 rol,
-                estado
-            })
+                estado,
+                id_usuario: req.usuario.id
+            });
 
             return res.status(201).json(nuevoJugador);
         }catch(e){
@@ -100,7 +94,9 @@ export class JugadorController {
         try{
             const { id } = req.params;
             const { nickname, nombre_real, pais, rol, estado } = req.body;
-            const jugador = await db.Jugador.findByPk(id);
+            const jugador = await db.Jugador.findOne({
+                where: { id, id_usuario: req.usuario.id }
+            });
             if(!jugador) {
                 return res.status(404).json({mensaje: `No se encontro ningun jugador con el id ${id}`})
             }
@@ -120,12 +116,14 @@ export class JugadorController {
     static eliminarJugador= async(req,res)=>{
         try{
             const {id} = req.params;
-            const jugador = await db.Jugador.findByPk(id);
+            const jugador = await db.Jugador.findOne({
+                where: { id, id_usuario: req.usuario.id }
+            });
             if(!jugador) {
                 return res.status(404).json({message:`No se encontro el usuario con el id ${id}`})
             }
-            jugador.destroy();
-            return res.status(204).json("Eliminado exitosamente")
+            await jugador.destroy();
+            return res.status(204).end();
         }catch(e){
             return res.status(500).json({error:e.message})
         }

@@ -13,11 +13,9 @@ export class RostersController {
                 whereConditions.temporada = temporada
             }
             const rosters = await db.Roster.findAll({
-                where: whereConditions
+                where: whereConditions,
+                include: [{ model: db.Usuario, as: "usuario", attributes: ["id", "nombre"] }]
             })
-            if(rosters.length == 0){
-                return res.status(400).json("No hay Jugadores")
-            }
             return res.status(200).json(rosters);
         } catch (error) {
             res.status(500).json({errors:error.message})
@@ -26,14 +24,16 @@ export class RostersController {
     static obtenerRostersJugadores = async(req,res)=> {
         try {
             const {id} = req.params;
-            const roster = await db.Roster.findByPk(id,{
+            const roster = await db.Roster.findOne({
+                where: { id, id_usuario: req.usuario.id },
                 include: [{
                     model: db.Jugador,
                     as: 'jugadores',
-                }]
+                    include: [{ model: db.Usuario, as: 'creador', attributes: ['id', 'nombre'] }]
+                }, { model: db.Usuario, as: 'usuario', attributes: ['id', 'nombre'] }]
             })
             if(!roster){
-                return res.status(400).json({message: "No existe el roster especificado"})
+                return res.status(404).json({message: "No existe el roster especificado"})
             }
             return res.status(200).json(roster)
         } catch (error) {
@@ -92,7 +92,7 @@ export class RostersController {
         try {
             const {id} = req.params;
             const {id_jugador,rol_en_roster} = req.body;
-            const jugadorExistente = await db.Jugador.findByPk(id_jugador);
+            const jugadorExistente = await db.Jugador.findOne({ where: { id: id_jugador, id_usuario: req.usuario.id } });
             const roster = await db.Roster.findByPk(id);
             if (!roster) {
                 return res.status(404).json({ message: "El roster no existe" });
@@ -139,7 +139,7 @@ export class RostersController {
                 return res.status(404).json({message:"No existe el jugador"})
             }
             if(rol_en_roster === "Titular" && jugadorExistente.rol_en_roster !== "Titular"){
-                const jugador = await db.Jugador.findByPk(id_jugador);
+                const jugador = await db.Jugador.findOne({ where: { id: id_jugador, id_usuario: req.usuario.id } });
                 const titulares = await db.Roster_Jugador.findAll({
                     where: { id_roster:id, rol_en_roster: "Titular" },
                     include: [{ model: db.Jugador, attributes: ['rol'] }]

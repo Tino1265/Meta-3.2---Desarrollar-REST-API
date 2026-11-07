@@ -20,11 +20,22 @@ const spec = swaggerJsdoc({
 
 server.use("/docs", swaggerUi.serve, swaggerUi.setup(spec))
 server.use(cors({
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true
 }))
 server.use(express.json())
 server.use(cookieParser())
+// Protege también login/registro frente a solicitudes de otros sitios.
+server.use((req, res, next) => {
+    if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+        const origin = req.get("origin");
+        const permitido = process.env.FRONTEND_URL || "http://localhost:3000";
+        if ((origin && origin !== permitido) || req.get("sec-fetch-site") === "cross-site") {
+            return res.status(403).json({ message: "Origen de solicitud no permitido" });
+        }
+    }
+    next();
+});
 server.use("/auth", auth)
 server.use("/jugadores",jugadores)
 server.use("/rosters",rosters)
